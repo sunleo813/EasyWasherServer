@@ -1,11 +1,17 @@
 var moment = require('moment');
 var fs = require('fs');
 var crypto = require('crypto');
+var http = require('http');
+
+//var qr = require('qr-image');
 
 var accountSettings = {
-    APP_ID: '2018062660487015',
+    //APP_ID: '2018062660487015',
+    APP_ID: '2016091400507437',
     APP_GATEWAY_URL: 'http://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/alipay/pay_notice.js',
     APP_PRIVATE_KEY_PATH: './pem/Alipay_App_Prikey2048.pem',
+    //ALIPAY_GATEWAY: 'https://openapi.alipay.com/gateway.do?',
+    ALIPAY_GATEWAY:'openapi.alipaydev.com/gateway.do',
     SERVICE_AMT: 15
 };
 
@@ -48,7 +54,33 @@ function SignWithPrivateKey(signType, content, privateKey) {
     return sign.sign(privateKey, 'base64');
 }
 
-exports.genSignedOrder = function (outTradeNo) {
+function sendAlipayOrder(signedTrans){
+    var options={
+        hostname: accountSettings.ALIPAY_GATEWAY,
+        port:443,
+        path:signedTrans,
+        method:'GET'
+    };
+    var req=http.request(options, function(res){
+        console.log('Status:'+res.statusCode);
+        console.log('Headers:'+JSONP.stringify(res.headers));
+        res.setEncoding('utf-8');
+        res.on('data',(chunk)=>{
+            console.log(chunk);
+        })
+        res.on('end',()=>{
+            console.log('response end');
+        })
+    })
+    req.on('error',(err)=>{
+        console.error(err);
+    });
+
+    req.end();
+
+}
+
+genSignedOrder = function (outTradeNo) {
     var params = new Map();
     params.set('app_id', accountSettings.APP_ID);
     params.set('method', 'alipay.trade.precreate');
@@ -62,4 +94,10 @@ exports.genSignedOrder = function (outTradeNo) {
     return [...params].map((k,v)=>`${k}=${encodeURIComponent(v)}`).join('&');
 };
 
+exports.genAlipayTransQRImage=function(outTradeNo){
+    var signedTransOrder=genSignedOrder(outTradeNo);
+    //var qrImage=qr.image(signedTransOrder,{size:10});
+    //return qrImage;
+    return sendAlipayOrder(signedTransOrder);
+}
 
