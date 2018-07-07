@@ -1,11 +1,8 @@
 var moment = require('moment');
 var fs = require('fs');
 var crypto = require('crypto');
-
-//var http = require('http');
 var request = require('request');
 
-//var qr = require('qr-image');
 
 var accountSettings = {
     //APP_ID: '2018062660487015',
@@ -21,7 +18,7 @@ var accountSettings = {
 //gen Biz_Content
 function BizContentBuilder(tradeNo) {
     var bizContent = {
-        subject: 'EasyWasher Car Wash Service',
+        subject: 'EasyTech Auto Washer Service',
         out_trade_no: tradeNo,
         total_amount: accountSettings.SERVICE_AMT.stringify,
         qr_code_timeout_express: '30m'
@@ -29,6 +26,16 @@ function BizContentBuilder(tradeNo) {
     return JSON.stringify(bizContent);
 };
 
+function sendAlipayOrder(signedTrans) {
+    var alipayUrl = accountSettings.ALIPAY_GATEWAY + signedTrans;
+    console.log(alipayUrl);
+    request(alipayUrl, function (error, res, body) {
+        if (!error && res.statusCode == 200) {
+            console.log(body);
+            return body;
+        }
+    })
+}
 
 
 function BuildSignedTrans(paramMap) {
@@ -37,7 +44,7 @@ function BuildSignedTrans(paramMap) {
     var paramsString = paramList.map(([k, v]) => `${k}=${v}`).join('&');
     //console.log(paramsString);
     var privateKey = fs.readFileSync(accountSettings.APP_PRIVATE_KEY_PATH, 'utf8');
-    console.log(privateKey);
+    //console.log(privateKey);
     var signType = paramMap.get('sign_type');
     return SignWithPrivateKey(signType, paramsString, privateKey);
 }
@@ -60,16 +67,6 @@ function SignWithPrivateKey(signType, content, privateKey) {
     return sign.sign(privateKey, 'base64');
 }
 
-function sendAlipayOrder(signedTrans) {
-    var alipayUrl = accountSettings.ALIPAY_GATEWAY + signedTrans;
-    console.log(alipayUrl);
-    request(alipayUrl, function (error, res, body) {
-        if (!error && res.statusCode == 200) {
-            console.log(body);
-            return body;
-        }
-    })
-}
 
 genSignedOrder = function (outTradeNo) {
     var params = new Map();
@@ -84,6 +81,7 @@ genSignedOrder = function (outTradeNo) {
     params.set('sign', BuildSignedTrans(params));
     //return [...params].map((k,v)=>`${k}=${encodeURIComponent(v)}`).join('&');
     var resultString = [...params].map(([k, v]) => `${k}=${v}`).join('&');
+    resultString=encodeURI(resultString);
     //console.log(resultString);
     return resultString;
 
