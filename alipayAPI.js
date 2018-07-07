@@ -42,7 +42,7 @@ function BuildSignedTrans(paramMap) {
     var paramList = [...paramMap].filter(([k1, v1]) => k1 !== 'sign' && v1);
     paramList.sort();
     var paramsString = paramList.map(([k, v]) => `${k}=${v}`).join('&');
-    //console.log(paramsString);
+    console.log(paramsString);
     var privateKey = fs.readFileSync(accountSettings.APP_PRIVATE_KEY_PATH, 'utf8');
     //console.log(privateKey);
     var signType = paramMap.get('sign_type');
@@ -64,7 +64,7 @@ function SignWithPrivateKey(signType, content, privateKey) {
         throw new Error('SignType format not correct: ' + signType);
     }
     sign.update(content);
-    return sign.sign(privateKey, 'base64');
+    return sign.sign(privateKey,'base64');
 }
 
 
