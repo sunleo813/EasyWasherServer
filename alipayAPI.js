@@ -11,7 +11,7 @@ var accountSettings = {
     APP_GATEWAY_URL: 'http://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/alipay/pay_notice.js',
     //APP_GATEWAY_URL: 'http://www.alipay.com',
     //APP_PRIVATE_KEY_PATH: './pem/Alipay_App_Prikey2048.pem',
-    APP_PRIVATE_KEY_PATH: './pem/AppPrivateKey.pem',
+    APP_PRIVATE_KEY_PATH: './pem/Sandbox/AppPrivateKey.txt',
     //ALIPAY_GATEWAY: 'https://openapi.alipay.com/gateway.do?',
     ALIPAY_GATEWAY: 'https://openapi.alipaydev.com/gateway.do?',
     SERVICE_AMT: '15.00'
@@ -47,7 +47,8 @@ function BuildSignedTrans(signType, paramsString) {
     // console.log(paramList);
     // var paramsString = paramList.map(([k, v]) => `${k}=${v}`).join('&');
     // console.log(paramsString);
-    var privateKey = fs.readFileSync(accountSettings.APP_PRIVATE_KEY_PATH, 'utf8');
+    var privatePem = fs.readFileSync(accountSettings.APP_PRIVATE_KEY_PATH, 'utf8');
+    var privateKey = privatePem.toString();
     //console.log(privateKey);
     //var signType = paramMap.get('sign_type');
     return SignWithPrivateKey(signType, paramsString, privateKey);
@@ -68,19 +69,19 @@ function SignWithPrivateKey(signType, content, privateKey) {
         throw new Error('SignType format not correct: ' + signType);
     }
     sign.update(content);
-    return sign.sign(privateKey,'base64');
+    sign= sign.sign(privateKey,'base64');
+    return encodeURIComponent(sign);
 }
 
 
 genSignedOrder = function (outTradeNo) {
     var params = new Map();
     params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
-    //params.set('timestamp', '2018-07-09 13:46:15');
     params.set('method', 'alipay.trade.precreate');
     params.set('app_id', accountSettings.APP_ID);
     params.set('sign_type', 'RSA2');
     params.set('version', '1.0');
-   // params.set('notify_url', accountSettings.APP_GATEWAY_URL);
+    params.set('notify_url', accountSettings.APP_GATEWAY_URL);
     params.set('charset', 'utf-8');
     params.set('biz_content', BizContentBuilder(outTradeNo));
 
@@ -90,6 +91,7 @@ genSignedOrder = function (outTradeNo) {
     paramList.sort();
     //console.log(paramList);
     var paramsString = paramList.map(([k, v]) => `${k}=${v}`).join('&');
+    //var paramsString = paramList.map(([k, v]) => `${k}="${v}"`).join('&');
     console.log(paramsString);
     var sign=BuildSignedTrans(params.get('sign_type'),paramsString);
     paramsString=paramsString+'&sign='+sign;
@@ -99,15 +101,15 @@ genSignedOrder = function (outTradeNo) {
     //var resultString = [...params].map(([k, v]) => `${k}=${v}`).join('&');
     //var resultString= [...params].map((k,v)=>`${urlencode(`${k}=${v}`)}`).join('&');
     //resultString=encodeURI(resultString);
-    resultString=encodeURI(paramsString);
-    console.log(resultString);
-    return resultString;
+    //resultString=encodeURI(paramsString);
+    console.log(paramsString);
+    return paramsString;
 
 };
 
 exports.genAlipayTransQRImage = function (outTradeNo) {
     var signedTransOrder = genSignedOrder(outTradeNo);
-    sendAlipayOrder(signedTransOrder);
-    return signedTransOrder;
+    return sendAlipayOrder(signedTransOrder);
+    //return signedTransOrder;
 }
 
