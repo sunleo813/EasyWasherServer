@@ -2,8 +2,9 @@ var moment = require('moment');
 var fs = require('fs');
 var crypto = require('crypto');
 var request = require('request');
+//var qs = require('querystring');
 
-
+//var return_qr_code_uri;
 
 var accountSettings = {
     //APP_ID: '2018062660487015',
@@ -29,13 +30,22 @@ function BizContentBuilder(tradeNo) {
 };
 
 //send signed order parameters to alipay gateway
-function sendAlipayOrder(signedTrans) {
+function sendAlipayOrder(signedTrans, cb) {
     var alipayUrl = accountSettings.ALIPAY_GATEWAY + signedTrans;
     //console.log(alipayUrl);
     request(alipayUrl, function (error, res, body) {
         if (!error && res.statusCode == 200) {
-            console.log(body);
-            return body;
+            var JSONParams = JSON.parse(body);
+            console.log(JSONParams);
+            var replyParams = JSONParams.alipay_trade_precreate_response;
+            console.log(replyParams.msg);
+            if (replyParams.msg == "Success") {
+                console.log(replyParams.qr_code);
+                //console.log(JSONParams.sign);
+                cb(replyParams.qr_code);
+            } else {
+                cb("Failed");
+            }
         }
     })
 }
@@ -91,9 +101,13 @@ createParams = function (outTradeNo) {
 
 };
 
-exports.genAlipayTransQRImage = function (outTradeNo) {
+exports.genAlipayTransQRImage = function (outTradeNo, cb) {
     var params = createParams(outTradeNo);
-    return sendAlipayOrder(params);
-    //return signedTransOrder;
+    var resultParams = sendAlipayOrder(params, (result) => {
+        console.log('retrieve qr code');
+        console.log("genAlipayTransQRImage result: " + result);
+        cb(result);
+    });
+
 }
 
