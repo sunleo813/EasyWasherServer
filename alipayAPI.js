@@ -13,6 +13,7 @@ var accountSettings = {
     //APP_GATEWAY_URL: 'http://www.alipay.com',
     //APP_PRIVATE_KEY_PATH: './pem/Alipay_App_Prikey2048.pem',
     APP_PRIVATE_KEY_PATH: './pem/Sandbox/AppPrivateKey.txt',
+    ALIPAY_PUBLIC_KEY_PATH: './pem/Sandbox/alipay_public_key.txt',
     //ALIPAY_GATEWAY: 'https://openapi.alipay.com/gateway.do?',
     ALIPAY_GATEWAY: 'https://openapi.alipaydev.com/gateway.do?',
     SERVICE_AMT: '15.00'
@@ -21,13 +22,26 @@ var accountSettings = {
 //gen Biz_Content
 function BizContentBuilder(tradeNo) {
     var bizContent = {
-        subject: 'EasyTech',
+        subject: 'EasyTech Auto Car Washing Service ',
         out_trade_no: tradeNo,
         total_amount: accountSettings.SERVICE_AMT,
         qr_code_timeout_express: '30m'
     };
     return JSON.stringify(bizContent);
 };
+
+
+function VerifySign(paramString, sign) {
+    var verify;
+    sign=encodeURIComponent(sign);
+    verify=crypto.createVerify('RSA-SHA256');
+    verify.update(paramString);
+    var publicKey = fs.readFileSync(accountSettings.ALIPAY_PUBLIC_KEY_PATH, 'utf8');
+    //var publicKey = publicPem.toString();
+    console.log('sign: '+sign);
+    console.log('public key: '+publicKey);
+    return verify.verify(publicKey,sign,'base64');
+}
 
 //send signed order parameters to alipay gateway
 function sendAlipayOrder(signedTrans, cb) {
@@ -36,9 +50,27 @@ function sendAlipayOrder(signedTrans, cb) {
     request(alipayUrl, function (error, res, body) {
         if (!error && res.statusCode == 200) {
             var JSONParams = JSON.parse(body);
-            console.log(JSONParams);
+//            console.log(JSONParams);
             var replyParams = JSONParams.alipay_trade_precreate_response;
-            console.log(replyParams.msg);
+ //           console.log(replyParams.msg);
+
+//create return parameters list
+            let sign=JSONParams.sign;
+            let paramsMap=new Map();
+            for(let key in replyParams){
+                paramsMap.set(key, replyParams[key]);
+            }
+            let paramsList=[...paramsMap].filter(([k1,v1])=>k1!=='sign' && v1);
+            paramsList.sort();
+            let paramsString=paramsList.map(([k,v])=>`${k}=${decodeURIComponent(v)}`).join('&');
+            console.log('paramsList： '+paramsString);
+
+//verify with alipay public key
+
+            let verifyResult=VerifySign(paramsString,sign);
+            console.log('verifyResult: '+verifyResult);
+
+
             if (replyParams.msg == "Success") {
                 console.log(replyParams.qr_code);
                 //console.log(JSONParams.sign);
@@ -104,8 +136,8 @@ createParams = function (outTradeNo) {
 exports.genAlipayTransQRImage = function (outTradeNo, cb) {
     var params = createParams(outTradeNo);
     var resultParams = sendAlipayOrder(params, (result) => {
-        console.log('retrieve qr code');
-        console.log("genAlipayTransQRImage result: " + result);
+ //       console.log('retrieve qr code');
+  //      console.log("genAlipayTransQRImage result: " + result);
         cb(result);
     });
 

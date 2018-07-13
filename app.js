@@ -11,10 +11,6 @@ app.get('/', function(req, res){
 
 app.get('/alipay', function(req,res){
     var transID=req.param('TransID');
-    //console.log(transID);
-    // var img=api.genAlipayTransQRImage(transID);
-    // res.writeHead(200, {'content-type':'image/png'});
-    // img.pipe(res);
     var result=api.genAlipayTransQRImage(transID,(result)=>{
         if (result == "Failed") {
             res.writeHead(414, {'Content-Type':'text/html'});
@@ -24,10 +20,9 @@ app.get('/alipay', function(req,res){
             res.writeHead(200, {'Content-Type':'image/png'});
             qrCode.pipe(res);
         }
-    });
-    
-    
+    });   
 })
+
 app.listen(3000, function(){
     console.log('Server running');
 })
