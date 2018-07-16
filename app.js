@@ -10,7 +10,7 @@ app.get('/', function(req, res){
 })
 
 app.get('/alipay', function(req,res){
-    var transID=req.param('TransID');
+    var transID=req.query.TransID;
     var result=api.genAlipayTransQRImage(transID,(result)=>{
         if (result == "Failed") {
             res.writeHead(414, {'Content-Type':'text/html'});
@@ -21,6 +21,10 @@ app.get('/alipay', function(req,res){
             qrCode.pipe(res);
         }
     });   
+})
+
+app.get('/alipay/rec_notify', function(req,res){
+    console.log(req.body);
 })
 
 app.listen(3000, function(){
