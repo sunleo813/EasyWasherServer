@@ -2,7 +2,7 @@ var moment = require('moment');
 var fs = require('fs');
 var crypto = require('crypto');
 var request = require('request');
-var config =  require('./config')
+var config = require('./config')
 //var qs = require('querystring');
 
 //var return_qr_code_uri;
@@ -14,24 +14,13 @@ function BizContentBuilder(tradeNo) {
     var bizContent = {
         subject: 'EasyTech Auto Car Washing Service ',
         out_trade_no: tradeNo,
-        total_amount:  config.SERVICE_AMT,
+        total_amount: config.SERVICE_AMT,
         qr_code_timeout_express: '30m'
     };
     return JSON.stringify(bizContent);
 };
 
 
-function VerifySign(paramString, sign) {
-    var verify;
-    sign=encodeURIComponent(sign);
-    verify=crypto.createVerify('RSA-SHA256');
-    verify.update(paramString);
-    var publicKey = fs.readFileSync(config.ALIPAY_PUBLIC_KEY_PATH, 'utf8');
-    //var publicKey = publicPem.toString();
-    console.log('sign: '+sign);
-    console.log('public key: '+publicKey);
-    return verify.verify(publicKey,sign,'base64');
-}
 
 //send signed order parameters to alipay gateway
 function sendAlipayOrder(signedTrans, cb) {
@@ -40,25 +29,9 @@ function sendAlipayOrder(signedTrans, cb) {
     request(alipayUrl, function (error, res, body) {
         if (!error && res.statusCode == 200) {
             var JSONParams = JSON.parse(body);
-//            console.log(JSONParams);
+            //            console.log(JSONParams);
             var replyParams = JSONParams.alipay_trade_precreate_response;
- //           console.log(replyParams.msg);
-
-//create return parameters list
-//             let sign=JSONParams.sign;
-//             let paramsMap=new Map();
-//             for(let key in replyParams){
-//                 paramsMap.set(key, replyParams[key]);
-//             }
-//             let paramsList=[...paramsMap].filter(([k1,v1])=>k1!=='sign' && v1);
-//             paramsList.sort();
-//             let paramsString=paramsList.map(([k,v])=>`${k}=${decodeURIComponent(v)}`).join('&');
-//             console.log('paramsList： '+paramsString);
-
-// //verify with alipay public key
-
-//             let verifyResult=VerifySign(paramsString,sign);
-//             console.log('verifyResult: '+verifyResult);
+            //           console.log(replyParams.msg);
 
 
             if (replyParams.msg == "Success") {
@@ -115,7 +88,6 @@ createParams = function (outTradeNo) {
     var paramsString = paramList.map(([k, v]) => `${k}=${v}`).join('&');
     //console.log(paramsString);
     var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
-    //var sign=BuildSignedTrans(params.get('sign_type'),paramsString);
     paramsString = paramsString + '&sign=' + signedParams;
     //console.log(paramsString);
     return paramsString;
@@ -125,10 +97,77 @@ createParams = function (outTradeNo) {
 exports.genAlipayTransQRImage = function (outTradeNo, cb) {
     var params = createParams(outTradeNo);
     var resultParams = sendAlipayOrder(params, (result) => {
- //       console.log('retrieve qr code');
-  //      console.log("genAlipayTransQRImage result: " + result);
+        //       console.log('retrieve qr code');
+        //      console.log("genAlipayTransQRImage result: " + result);
         cb(result);
     });
 
-}
+    buildAlipayNoticeParams = function (data) {
+        let params = new Map();
+        params.set('notifyTime', data.notify_time);
+        params.set('gmtCreate', data.gmt_create);
+        params.set('charset', data.charset);
+        params.set('sellerEmail', data.seller_email);
+        params.set('subject', data.subject);
+        params.set('sign', data.sign);
+        params.set('buyerId', data.buyer_id);
+        params.set('invoiceAmount', data.invoice_amount);
+        params.set('notifyId', data.notify_id);
+        params.set('fundBillList', data.fund_bill_list);
+        params.set('notifyType', data.notify_type);
+        params.set('tradeStatus', data.trade_status);
+        params.set('receiptAmount', data.receipt_amount);
+        params.set('appId', data.app_id);
+        params.set('buyerPayAmount', data.buyer_pay_amount);
+        params.set('signType', data.sign_type);
+        params.set('sellerId', data.seller_id);
+        params.set('gmtPayment', data.gmt_payment);
+        params.set('notifyTime', data.notify_time);
+        params.set('version', data.version);
+        params.set('outTradeNo', data.out_trade_no);
+        params.set('totalAmount', data.total_amount);
+        params.set('tradeNo', data.trade_no);
+        params.set('authAppId', data.auth_app_id);
+        params.set('buyerLogonId', data.buyer_logon_id);
+        params.set('pointAmount', data.point_amount);
+
+        //console.log(params);
+        return params;
+    }
+
+
+    function VerifySign(paramString, sign) {
+        try {
+            let verify;
+            //sign = encodeURIComponent(sign);
+            verify = crypto.createVerify('RSA-SHA256');
+            verify.update(paramString);
+            var publicKey = fs.readFileSync(config.ALIPAY_PUBLIC_KEY_PATH, 'utf8');
+            //var publicKey = publicPem.toString();
+            console.log('sign: ' + sign);
+            console.log('public key: ' + publicKey);
+            return verify.verify(publicKey, sign, 'base64');
+
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+
+        exports.verifyReturnNotice = function (postBody) {
+
+            let paramsMap = buildAlipayNoticeParams(postBody);
+            paramsMap = [...paramsMap].filter(([k1, v1]) => k1 !== 'sign' && k1 !== 'signType' && v1);
+            paramsMap.sort();
+            let paramsString = paramsMap.map(([k, v]) => `${k}=${decodeURIComponent(v)}`).join('&');
+          //  console.log('paramsString: ' + paramsString);
+            return VerifySign(paramsString, postBody.sign);
+        }
+
+        // //verify with alipay public key
+
+        //             let verifyResult=VerifySign(paramsString,sign);
+        //             console.log('verifyResult: '+verifyResult);
+
+    }
 
