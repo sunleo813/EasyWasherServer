@@ -18,11 +18,11 @@ app.get('/alipay', function (req, res) {
             res.writeHead(414, { 'Content-Type': 'text/html' });
             res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
         } else {
-            var qrCode = qr.image(result, { size: 10, type: 'png' })
+            var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
             res.writeHead(200, { 'Content-Type': 'image/png' });
             qrCode.pipe(res);
         }
-    });
+    }); 
 })
 
 app.post('/aliNotify.html', function (req, res) {
@@ -30,12 +30,9 @@ app.post('/aliNotify.html', function (req, res) {
         body += chunk;
     });
     req.on('end', function () {
-        //console.log(body);
         var postBody = querystring.parse(body);
-        //console.log(postBody.notify_time);
-        //api.buildAlipayNoticeParams(postBody);
         var result = api.verifyReturnNotice(postBody);
-        console.log('verify result: ' + result);
+        console.log('req on - result:' + result);
         if (result) {
             startService();
         } else {
