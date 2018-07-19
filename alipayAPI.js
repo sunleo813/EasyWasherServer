@@ -22,7 +22,7 @@ function BizContentBuilder(tradeNo) {
 
 //sign order
 
-function SignWithPrivateKey(signType, content) {
+function signWithPrivateKey(signType, content) {
     var sign;
     var privatePem = fs.readFileSync(config.ALIPAY_APP_PRIVATE_KEY_PATH, 'utf8');
     var privateKey = privatePem.toString();
@@ -40,7 +40,7 @@ function SignWithPrivateKey(signType, content) {
     return encodeURIComponent(sign);
 }
 
-function VerifySign(paramString, sign) {
+function verifySign(paramString, sign) {
     try {
         let verify;
         sign = decodeURIComponent(sign);
@@ -66,20 +66,47 @@ makeParamsString = function (params) {
     return paramsString;
 }
 
-createParams = function (outTradeNo) {
+// createParams = function (outTradeNo) {
+//     var params = new Map();
+//     params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
+//     params.set('method', 'alipay.trade.precreate');
+//     params.set('app_id', config.ALIPAY_APP_ID);
+//     params.set('sign_type', 'RSA2');
+//     params.set('version', '1.0');
+//     params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
+//     params.set('charset', 'utf-8');
+//     params.set('biz_content', BizContentBuilder(outTradeNo));
+//     var paramsString = makeParamsString(params);
+//     var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
+//     paramsString = paramsString + '&sign=' + signedParams;
+//     return paramsString;
+
+// };
+
+createParams = function (transType,outTradeNo) {
     var params = new Map();
-    params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
-    params.set('method', 'alipay.trade.precreate');
+    params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));    
     params.set('app_id', config.ALIPAY_APP_ID);
     params.set('sign_type', 'RSA2');
-    params.set('version', '1.0');
-    params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
+    params.set('version', '1.0');  
     params.set('charset', 'utf-8');
-    params.set('biz_content', BizContentBuilder(outTradeNo));
-    var paramsString = makeParamsString(params);
-    var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
-    paramsString = paramsString + '&sign=' + signedParams;
-    return paramsString;
+    switch (transType)
+    {
+        case 'precreate':
+            params.set('method', 'alipay.trade.precreate');
+            params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
+            params.set('biz_content', BizContentBuilder(outTradeNo));
+            break;
+        case 'query':
+            params.set('method', 'alipay.trade.query');
+            params.set('biz_content', JSON.stringify({ trade_no: outTradeNo }));
+            break;
+    }
+    return params;
+    // var paramsString = makeParamsString(params);
+    // var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
+    // paramsString = paramsString + '&sign=' + signedParams;
+    // return paramsString;
 
 };
 
@@ -155,7 +182,7 @@ queryPaymentStatus = function (tradeNo) {
     params.set('charset', 'utf-8');
     params.set('biz_content', JSON.stringify({ trade_no: tradeNo }));
     let paramsString = makeParamsString(params);
-    let signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
+    let signedParams = signWithPrivateKey(params.get('sign_type'), paramsString);
     paramsString = paramsString + '&sign=' + signedParams;
     sendAlipayOrder(paramsString, 'alipay.trade.query', (result) => {
         if (result.trade_no === tradeNo) {
@@ -170,23 +197,45 @@ queryPaymentStatus = function (tradeNo) {
 }
 
 
-exports.genAlipayTransQRImage = function (outTradeNo, cb) {
-    var params = createParams(outTradeNo);
-    var resultParams = sendAlipayOrder(params, 'alipay.trade.precreate', (result) => {
+// exports.genAlipayTransQRImage = function (outTradeNo, cb) {
+//     var params = createParams(outTradeNo);
+//     var resultParams = sendAlipayOrder(params, 'alipay.trade.precreate', (result) => {
 
+//         cb(result);
+//     });
+// }
+
+
+exports.SendPrecreateTransaction=function(outTradeNo,cb)
+{
+    var params=createParams("precreate", outTradeNo);
+    var paramsString=makeParamsString(params);
+    var sign=signWithPrivateKey(params.get('sign_type'),paramsString);
+    paramsString+='&sign='+sign;
+    sendAlipayOrder(paramsString,'alipay.trade.precreate', (result)=>{
         cb(result);
-    });
+    })
 }
 
+exports.SendQueryTransaction=function(tradeNo, cb){
+    var params=createParams("query", tradeNo);
+    var paramsString=makeParamsString(params);
+    var sign=signWithPrivateKey(params.get('sign_type'),paramsString);
+    paramsString+='&sign='+sign;
+    sendAlipayOrder(paramsString,'alipay.trade.query', (result)=>{
+        cb(result);
+    })
+}
 
-exports.verifyReturnNotice = function (postBody) {
+exports.VerifyReturnNotice = function (postBody) {
 
     let paramsMap = buildAlipayNoticeParams(postBody);
 
     paramsMap = [...paramsMap].filter(([k1, v1]) => k1 !== 'sign' && k1 !== 'signType' && v1);
     paramsMap.sort();
     let paramsString = paramsMap.map(([k, v]) => `${k}=${decodeURIComponent(v)}`).join('&');
-    if (!VerifySign(paramsString, postBody.sign)) {
+
+    if (!verifySign(paramsString, postBody.sign)) {
         if (queryPaymentStatus(postBody.trade_no))
             return true;
         else
@@ -198,5 +247,22 @@ exports.verifyReturnNotice = function (postBody) {
 
 
 
+
+// class Transaction {
+//     constructor() {
+//         this.params = new Map();
+//         params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
+//         params.set('app_id', config.ALIPAY_APP_ID);
+//         params.set('sign_type', 'RSA2');
+//         params.set('version', '1.0');
+//         params.set('charset', 'utf-8');
+//     };
+
+//     BuildTransactionString() {
+
+//     };
+
+// }
+// var trans = Transaction();
 
 

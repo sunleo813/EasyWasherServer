@@ -13,7 +13,7 @@ app.get('/', function (req, res) {
 
 app.get('/alipay', function (req, res) {
     var transID = req.query.TransID;
-    var result = api.genAlipayTransQRImage(transID, (result) => {
+    api.SendPrecreateTransaction(transID,(result)=>{
         if (result == "Failed") {
             res.writeHead(414, { 'Content-Type': 'text/html' });
             res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
@@ -22,7 +22,8 @@ app.get('/alipay', function (req, res) {
             res.writeHead(200, { 'Content-Type': 'image/png' });
             qrCode.pipe(res);
         }
-    }); 
+    });
+
 })
 
 app.post('/aliNotify.html', function (req, res) {
@@ -31,15 +32,19 @@ app.post('/aliNotify.html', function (req, res) {
     });
     req.on('end', function () {
         var postBody = querystring.parse(body);
-        var result = api.verifyReturnNotice(postBody);
-        console.log('req on - result:' + result);
-        if (result) {
-            startService();
-        } else {
-            console.log('fail to verify sign');
+        var verified = api.VerifyReturnNotice(postBody);
+        if(!verified){
+            api.SendQueryTransaction(postBody.trade_no,(result)=>{
+                if (result.trade_no === postBody.trade_no && (result.trade_status === "TRADE_SUCCESS" || result.trade_status == "TRADE_FINISHED")) {
+                    startService()   
+                } else {
+                    console.log('fail to verify sign');
+                    return false;
+                }
+            })
         }
     })
-    // if(postBody.trade_status==='TRADE_SUCCESS'|| postBody.trade_status==='TRADE_FINISHED' || postBody.trade_status==='TRADE_CLOSED')
+
     res.send('success');
 })
 
