@@ -3,10 +3,12 @@ var fs = require('fs');
 var crypto = require('crypto');
 var request = require('request');
 var config = require('./config')
+
 //var qs = require('querystring');
 
 //var return_qr_code_uri;
 
+//const db = new MongoAPI();
 
 
 //gen Biz_Content
@@ -83,15 +85,14 @@ makeParamsString = function (params) {
 
 // };
 
-createParams = function (transType,outTradeNo) {
+createParams = function (transType, outTradeNo) {
     var params = new Map();
-    params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));    
+    params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
     params.set('app_id', config.ALIPAY_APP_ID);
     params.set('sign_type', 'RSA2');
-    params.set('version', '1.0');  
+    params.set('version', '1.0');
     params.set('charset', 'utf-8');
-    switch (transType)
-    {
+    switch (transType) {
         case 'precreate':
             params.set('method', 'alipay.trade.precreate');
             params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
@@ -197,36 +198,31 @@ queryPaymentStatus = function (tradeNo) {
 }
 
 
-// exports.genAlipayTransQRImage = function (outTradeNo, cb) {
-//     var params = createParams(outTradeNo);
-//     var resultParams = sendAlipayOrder(params, 'alipay.trade.precreate', (result) => {
-
-//         cb(result);
-//     });
-// }
 
 
-exports.SendPrecreateTransaction=function(outTradeNo,cb)
-{
-    var params=createParams("precreate", outTradeNo);
-    var paramsString=makeParamsString(params);
-    var sign=signWithPrivateKey(params.get('sign_type'),paramsString);
-    paramsString+='&sign='+sign;
-    sendAlipayOrder(paramsString,'alipay.trade.precreate', (result)=>{
+//create and send transaction to alipay
+exports.SendPrecreateTransaction = function (outTradeNo, cb) {
+    var params = createParams("precreate", outTradeNo);
+    var paramsString = makeParamsString(params);
+    var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
+    paramsString += '&sign=' + sign;
+    sendAlipayOrder(paramsString, 'alipay.trade.precreate', (result) => {
         cb(result);
     })
 }
 
-exports.SendQueryTransaction=function(tradeNo, cb){
-    var params=createParams("query", tradeNo);
-    var paramsString=makeParamsString(params);
-    var sign=signWithPrivateKey(params.get('sign_type'),paramsString);
-    paramsString+='&sign='+sign;
-    sendAlipayOrder(paramsString,'alipay.trade.query', (result)=>{
+//check payment status from Alipay
+exports.SendQueryTransaction = function (tradeNo, cb) {
+    var params = createParams("query", tradeNo);
+    var paramsString = makeParamsString(params);
+    var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
+    paramsString += '&sign=' + sign;
+    sendAlipayOrder(paramsString, 'alipay.trade.query', (result) => {
         cb(result);
     })
 }
 
+//verify sign of returned notice from alipay
 exports.VerifyReturnNotice = function (postBody) {
 
     let paramsMap = buildAlipayNoticeParams(postBody);
