@@ -2,7 +2,7 @@ var mongoClient = require('mongodb').MongoClient;
 var config = require('./config');
 var async = require("async");
 
-function mongoDB() {
+var mongoDB = function () {
 
     makeConnection = function (cb) {
 
@@ -11,7 +11,6 @@ function mongoDB() {
                 throw err;
             }
             else {
-                console.log('database online');
                 cb(dbo);
             }
         })
@@ -22,7 +21,6 @@ function mongoDB() {
 
 
     insertDB = function (dbo, record, cb) {
-
         var db = dbo.db('EasyWasherDB');
         db.collection('Transactions').insertOne(record, (err, result) => {
             if (err) {
@@ -30,71 +28,76 @@ function mongoDB() {
                 throw err;
             } else {
                 dbo.close();
-                console.log('record insert success');
-                cb(result);
+                cb(null, result);
             }
         })
     }
 
-    findDB = function (dbo, record, cb) {
+    findDB = function (dbo, params, cb) {
 
         var db = dbo.db("EasyWasherDB");
-        var result;
-
-        if (record === "") {
+    
+        if (params === "") {
             db.collection("Transactions").find({}).toArray((err, res) => {
-                result = res
+
+                dbo.close()
+                cb(res);
             })
         }
         else {
-            db.collection("Transactions").find(record).toArray((err, res) => {
-                result = res
+            var collection = db.collection('Transactions');
+            collection.find(params).toArray((err, res) => {
+                dbo.close()
+                cb(res);
             })
         }
-        db.close()
-        cb(result);
     }
 
     this.AddRecord = function (record) {
-
-        console.log('AddRecord run');
-        async.series([
+        async.waterfall([
             function (cb) {
                 makeConnection((db) => {
                     cb(null, db);
                 })
             },
             function (db, cb) {
-                console.log('db value before call insertDB" '+db);
-                insertDB(db, (result) => {
-                    cb(result);
+                insertDB(db, record, (result) => {
+                    cb(null, result);
                 })
             }
         ], function (err, result) {
-            if (err !== "") {
-                console.log('Database ADD operations error: ' + err);
+            if (!err) {
+                return true;
             }
             else {
-                console.log(result);
+                return false;
             }
         })
     }
+
+
+
+    this.FindRecord = function (params, callback) {
+        async.waterfall([
+            function (cb) {
+                makeConnection((db) => {
+                    cb(null, db);
+                })
+            },
+            function (db, cb) {
+                findDB(db, params, (res) => {
+                    cb(null, res);
+                })
+            }
+        ], function (err, res) {
+            if (err) {
+                callback(null);
+            } else {
+                callback(res);
+            }
+        })
+
+    };
 }
-
-
-this.FindRecord = function (record) {
-    try {
-        var dbo = makeConnection()
-        return findDB(dbo, record)
-
-    } catch (err) {
-        //better send sms to support team
-        console.log('Database ADD operations error: ' + err);
-    }
-
-}
-
-
-
 
 module.exports = mongoDB;

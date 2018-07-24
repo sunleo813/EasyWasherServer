@@ -33,16 +33,35 @@ app.get('/alipay', function (req, res) {
         } else {
             var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
             res.writeHead(200, { 'Content-Type': 'image/png' });
+
             qrCode.pipe(res);
         }
     });
 
 })
 
+app.get('/payment_status', function (req, res) {
+    var transID = req.query.TransID;
+    var params = { 'TradeNO': transID };
+    db.FindRecord(params, (result) => {
+        if (result[0]===undefined) { res.send('failed') }
+        else {
+            resultObj=result[0];
+            if(resultObj.TradeStatus==='TRADE_SUCCESS'){
+                res.send('success')
+            } else {
+                res.send('failed')
+            }
+            
+        }
+    });
+})
+
+
 app.get('/query', function (req, res) {
     var transID = req.query.TransID;
     var result = db.FindRecord(transID);
-    console.log(result);
+    console.log('app-app.get:' + result);
 })
 
 app.post('/aliNotify.html', function (req, res) {
@@ -59,13 +78,13 @@ app.post('/aliNotify.html', function (req, res) {
                     InsertTransactionToDB(postBody);
                     startService()
                 } else {
-                    console.log('Alipay query return failed');
+                    console.log('app-app.post: Alipay query return failed');
                     return false;
                 }
             })
         }
         else {
-            console.log('Alipay reply notice verified!');
+            console.log('app-app.post: Alipay reply notice verified!');
             startService();
         }
     })

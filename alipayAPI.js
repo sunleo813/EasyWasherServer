@@ -52,7 +52,7 @@ function verifySign(paramString, sign) {
         return verify.verify(publicKey, sign, 'base64');
 
     } catch (err) {
-        console.log(err);
+        console.log('api-verifySign: '+err);
         return false;
     }
 }
