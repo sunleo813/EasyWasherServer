@@ -68,22 +68,6 @@ makeParamsString = function (params) {
     return paramsString;
 }
 
-// createParams = function (outTradeNo) {
-//     var params = new Map();
-//     params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
-//     params.set('method', 'alipay.trade.precreate');
-//     params.set('app_id', config.ALIPAY_APP_ID);
-//     params.set('sign_type', 'RSA2');
-//     params.set('version', '1.0');
-//     params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
-//     params.set('charset', 'utf-8');
-//     params.set('biz_content', BizContentBuilder(outTradeNo));
-//     var paramsString = makeParamsString(params);
-//     var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
-//     paramsString = paramsString + '&sign=' + signedParams;
-//     return paramsString;
-
-// };
 
 createParams = function (transType, outTradeNo) {
     var params = new Map();
@@ -100,8 +84,11 @@ createParams = function (transType, outTradeNo) {
             break;
         case 'query':
             params.set('method', 'alipay.trade.query');
-            params.set('biz_content', JSON.stringify({ trade_no: outTradeNo }));
-            break;
+            params.set('biz_content', JSON.stringify({ out_trade_no: outTradeNo }));
+            break;  
+        case 'transfer':
+            param.set ('method', 'alipay.fund.transfer');
+            param.set ('biz_content', TransferBizContentBuilder());
     }
     return params;
     // var paramsString = makeParamsString(params);
@@ -212,8 +199,8 @@ exports.SendPrecreateTransaction = function (outTradeNo, cb) {
 }
 
 //check payment status from Alipay
-exports.SendQueryTransaction = function (tradeNo, cb) {
-    var params = createParams("query", tradeNo);
+exports.SendQueryTransaction = function (outTradeNo, cb) {
+    var params = createParams("query", outTradeNo);
     var paramsString = makeParamsString(params);
     var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
     paramsString += '&sign=' + sign;

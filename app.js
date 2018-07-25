@@ -44,24 +44,48 @@ app.get('/payment_status', function (req, res) {
     var transID = req.query.TransID;
     var params = { 'TradeNO': transID };
     db.FindRecord(params, (result) => {
-        if (result[0]===undefined) { res.send('failed') }
+        if (result[0] === undefined) { res.send('failed') }
         else {
-            resultObj=result[0];
-            if(resultObj.TradeStatus==='TRADE_SUCCESS'){
+            resultObj = result[0];
+            if (resultObj.TradeStatus === 'TRADE_SUCCESS') {
                 res.send('success')
             } else {
                 res.send('failed')
             }
-            
+
         }
     });
 })
 
 
 app.get('/query', function (req, res) {
-    var transID = req.query.TransID;
-    var result = db.FindRecord(transID);
-    console.log('app-app.get:' + result);
+
+    var q = req.query.criteria;
+    var v = req.query.value;
+    var params = {};
+
+    if (q !== null) {
+        // console.log('app-query criteria: ' + q);
+        // console.log('app-query value: ' + v);
+        switch (q) {
+            case 'TradeNO':
+                params = { 'TradeNO': v };
+                break;
+            case 'NotifyTime':
+                params = { 'NotifyTime': v };
+                break;
+            case 'TradeStatus':
+                params = { 'TradeStatus': v };
+                break;
+            default:
+                params = {};
+        }
+    }
+
+    // console.log('app-query params: ' + JSON.stringify(params))
+    db.FindRecord(params, (result) => {
+        res.send(JSON.stringify(result));
+    });
 })
 
 app.post('/aliNotify.html', function (req, res) {
@@ -72,11 +96,11 @@ app.post('/aliNotify.html', function (req, res) {
         var postBody = querystring.parse(body);
         var verified = api.VerifyReturnNotice(postBody);
         if (!verified) {
-            api.SendQueryTransaction(postBody.trade_no, (result) => {
+            api.SendQueryTransaction(postBody.out_trade_no, (result) => {
                 if (result.trade_no === postBody.trade_no && (result.trade_status === "TRADE_SUCCESS" || result.trade_status == "TRADE_FINISHED")) {
+//                    console.log('aliNotify-trade status: '+result.trade_status);
                     //add insert db here 
                     InsertTransactionToDB(postBody);
-                    startService()
                 } else {
                     console.log('app-app.post: Alipay query return failed');
                     return false;
@@ -85,7 +109,7 @@ app.post('/aliNotify.html', function (req, res) {
         }
         else {
             console.log('app-app.post: Alipay reply notice verified!');
-            startService();
+
         }
     })
 
@@ -97,7 +121,4 @@ app.listen(3000, function () {
 })
 
 
-var startService = function () {
-    console.log('Washing machine start...');
-}
 
