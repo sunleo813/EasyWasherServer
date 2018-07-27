@@ -81,7 +81,6 @@ app.get('/query', function (req, res) {
                 params = {};
         }
     }
-
     // console.log('app-query params: ' + JSON.stringify(params))
     db.FindRecord(params, (result) => {
         res.send(JSON.stringify(result));

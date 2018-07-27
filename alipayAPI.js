@@ -12,7 +12,7 @@ var config = require('./config')
 
 
 //gen Biz_Content
-function BizContentBuilder(tradeNo) {
+function PrecreateBizContentBuilder(tradeNo) {
     var bizContent = {
         subject: 'EasyTech Auto Car Washing Service ',
         out_trade_no: tradeNo,
@@ -21,6 +21,12 @@ function BizContentBuilder(tradeNo) {
     };
     return JSON.stringify(bizContent);
 };
+
+
+function TransferBizContentBuilder(){
+
+
+}
 
 //sign order
 
@@ -80,7 +86,7 @@ createParams = function (transType, outTradeNo) {
         case 'precreate':
             params.set('method', 'alipay.trade.precreate');
             params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
-            params.set('biz_content', BizContentBuilder(outTradeNo));
+            params.set('biz_content', PrecreateBizContentBuilder(outTradeNo));
             break;
         case 'query':
             params.set('method', 'alipay.trade.query');
@@ -91,11 +97,6 @@ createParams = function (transType, outTradeNo) {
             param.set ('biz_content', TransferBizContentBuilder());
     }
     return params;
-    // var paramsString = makeParamsString(params);
-    // var signedParams = SignWithPrivateKey(params.get('sign_type'), paramsString);
-    // paramsString = paramsString + '&sign=' + signedParams;
-    // return paramsString;
-
 };
 
 
