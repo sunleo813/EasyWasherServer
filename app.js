@@ -14,9 +14,17 @@ InsertTransactionToDB = function (params) {
         TotalAmount: params.total_amount,
         Subject: params.subject,
         NotifyTime: params.notify_time,
-        TradeStatus: params.trade_status
+        TradeStatus: params.trade_status,
+        PaymentMethod: 'Alipay',
+        BuyerLogonID: params.buyer_logon_id,
+        BuyerUserID: params.buyer_user_id
     };
-    db.AddRecord(record);
+    console.log('app-InsertTransactionToDB record: '+ JSON.stringify(record));
+    if(db.AddRecord(record)){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 app.get('/', function (req, res) {
@@ -43,19 +51,32 @@ app.get('/alipay', function (req, res) {
 app.get('/payment_status', function (req, res) {
     var transID = req.query.TransID;
     var params = { 'TradeNO': transID };
-    db.FindRecord(params, (result) => {
-        if (result[0] === undefined) { res.send('failed') }
-        else {
-            resultObj = result[0];
-            if (resultObj.TradeStatus === 'TRADE_SUCCESS') {
-                res.send('success')
-            } else {
-                res.send('failed')
-            }
-
+    api.SendQueryTransaction(transID, (result) => {
+        if (result.out_trade_no === transID)  {
+           console.log('aliNotify-trade status: '+result.trade_status);
+            //add insert db here 
+            res.send(result.trade_status);
+            
+        } else {
+            console.log('app-app.post: Alipay query return wrong out_trade_no');
+            res.send('out_trade_no not correct');
         }
-    });
+    })
+    // db.FindRecord(params, (result) => {
+    //     if (result[0] === undefined) { res.send('failed') }
+    //     else {
+    //         resultObj = result[0];
+    //         if (resultObj.TradeStatus === 'TRADE_SUCCESS') {
+    //             res.send('success')
+    //         } else {
+    //             res.send('failed')
+    //         }
+
+    //     }
+    // });
 })
+
+
 
 
 app.get('/query', function (req, res) {
@@ -88,6 +109,7 @@ app.get('/query', function (req, res) {
 })
 
 app.post('/aliNotify.html', function (req, res) {
+    console.log('app-aliNotify got notice from aliay');
     req.on('data', function (chunk) {
         body += chunk;
     });
@@ -97,9 +119,11 @@ app.post('/aliNotify.html', function (req, res) {
         if (!verified) {
             api.SendQueryTransaction(postBody.out_trade_no, (result) => {
                 if (result.trade_no === postBody.trade_no && (result.trade_status === "TRADE_SUCCESS" || result.trade_status == "TRADE_FINISHED")) {
-//                    console.log('aliNotify-trade status: '+result.trade_status);
+                   console.log('aliNotify-trade status: '+result.trade_status);
                     //add insert db here 
-                    InsertTransactionToDB(postBody);
+                    if(!InsertTransactionToDB(postBody)){
+                        console.log('Insert record to db error!!!!');
+                    }
                 } else {
                     console.log('app-app.post: Alipay query return failed');
                     return false;

@@ -8,6 +8,7 @@ var mongoDB = function () {
 
         mongoClient.connect(config.DB_URL, function (err, dbo) {
             if (err) {
+                console.log('Fail to connect DB!!!!!')
                 throw err;
             }
             else {

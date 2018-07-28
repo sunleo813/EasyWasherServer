@@ -51,7 +51,8 @@ function signWithPrivateKey(signType, content) {
 function verifySign(paramString, sign) {
     try {
         let verify;
-        sign = decodeURIComponent(sign);
+        //sign = decodeURIComponent(sign);
+        console.log('verifySign-sign: ')
         verify = crypto.createVerify('RSA-SHA256');
         verify.update(paramString);
         var publicKey = fs.readFileSync(config.ALIPAY_PUBLIC_KEY_PATH, 'utf8');
