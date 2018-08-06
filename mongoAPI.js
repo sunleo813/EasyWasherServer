@@ -37,7 +37,6 @@ var mongoDB = function () {
     findDB = function (dbo, params, cb) {
 
         var db = dbo.db("EasyWasherDB");
- //       console.log('findb params value: '+params);
         if (params === "") {
             db.collection("Transactions").find({}).toArray((err, res) => {
 
@@ -49,7 +48,6 @@ var mongoDB = function () {
             var collection = db.collection('Transactions');
             collection.find(params).toArray((err, res) => {
                 dbo.close()
-     //           console.log('findb res: '+res);
                 cb(res);
             })
         }
@@ -68,11 +66,8 @@ var mongoDB = function () {
                 })
             }
         ], function (err, result) {
-            if (!err) {
-                return true;
-            }
-            else {
-                return false;
+            if (err) {
+                console.log("MongoAPI-AddRecord: Fail to add record to DB!!");
             }
         })
     }
