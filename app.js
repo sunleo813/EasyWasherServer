@@ -1,3 +1,4 @@
+
 var express = require('express');
 var app = express();
 var api = require('./alipayAPI');
@@ -5,6 +6,8 @@ var qr = require('qr-image');
 var querystring = require('querystring');
 var MongoAPI = require('./mongoAPI');
 var moment = require('moment');
+var content = require('./content');
+
 
 var body = "";
 const db = new MongoAPI();
@@ -34,17 +37,21 @@ app.get('/alipay', function (req, res) {
     var ShopID = req.query.ShopID;
     var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
     console.log(transID);
-    api.SendPrecreateTransaction(transID, (result) => {
-        if (result == "Failed") {
-            res.writeHead(414, { 'Content-Type': 'text/html' });
-            res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
-        } else {
-            var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
-            res.writeHead(200, { 'Content-Type': 'image/png' });
+    content = new AliPrecreateContent(transID);
+    let paramsString=content.build();
+    console.log(paramsString);
 
-            qrCode.pipe(res);
-        }
-    });
+    // api.SendPrecreateTransaction(transID, (result) => {
+    //     if (result == "Failed") {
+    //         res.writeHead(414, { 'Content-Type': 'text/html' });
+    //         res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
+    //     } else {
+    //         var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
+    //         res.writeHead(200, { 'Content-Type': 'image/png' });
+
+    //         qrCode.pipe(res);
+    //     }
+    // });
 
 })
 

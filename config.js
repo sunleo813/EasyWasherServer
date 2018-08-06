@@ -15,4 +15,4 @@ var config = {
     DB_URL: 'mongodb://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/EasyWasherDB'
 };
 
-module.exports = config;ß
+module.exports = config;
