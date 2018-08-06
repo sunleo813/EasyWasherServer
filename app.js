@@ -4,6 +4,7 @@ var api = require('./alipayAPI');
 var qr = require('qr-image');
 var querystring = require('querystring');
 var MongoAPI = require('./mongoAPI');
+var moment = require('moment');
 
 var body = "";
 const db = new MongoAPI();
@@ -20,11 +21,8 @@ InsertTransactionToDB = function (params) {
         BuyerUserID: params.buyer_user_id
     };
     console.log('app-InsertTransactionToDB record: ' + JSON.stringify(record));
-    if (db.AddRecord(record)) {
-        return true;
-    } else {
-        return false;
-    }
+    db.AddRecord(record);
+
 }
 
 app.get('/', function (req, res) {
@@ -33,7 +31,9 @@ app.get('/', function (req, res) {
 })
 
 app.get('/alipay', function (req, res) {
-    var transID = req.query.TransID;
+    var ShopID = req.query.ShopID;
+    var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
+    console.log(transID);
     api.SendPrecreateTransaction(transID, (result) => {
         if (result == "Failed") {
             res.writeHead(414, { 'Content-Type': 'text/html' });
@@ -120,9 +120,7 @@ app.post('/aliNotify.html', function (req, res) {
                 if (result.trade_no === postBody.trade_no && (result.trade_status === "TRADE_SUCCESS" || result.trade_status == "TRADE_FINISHED")) {
                     console.log('aliNotify-trade status: ' + result.trade_status);
                     //add insert db here 
-                    if (!InsertTransactionToDB(postBody)) {
-                        console.log('Insert record to db error!!!!');
-                    }
+                    InsertTransactionToDB(postBody);
                 } else {
                     console.log('app-app.post: Alipay query return failed');
                     return false;
