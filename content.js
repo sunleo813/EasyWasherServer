@@ -3,7 +3,7 @@ var fs = require('fs');
 var crypto = require('crypto');
 var config = require('./config');
 
-export class Content {
+class Content {
 
     constructor(outTradeNo) {
         this.outTradeNo = outTradeNo;
@@ -58,26 +58,17 @@ export class Content {
         return paramsString;
         // sendAlipayOrder(paramsString, 'alipay.trade.precreate', (result) => {
         //     cb(result);
-        }
     }
+}
 
-
-
-export class AliPrecreateContent extends Content {
+class AliPrecreateContent extends Content {
     constructor(outTradeNo) {
         super(outTradeNo);
 
     }
 
-    createParams() {
-        let params = super.createParams();
-        params.set('method', 'alipay.trade.precreate');
-        params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
-        params.set('biz_content', BizContentBuilder());
-        return params;
-    }
 
-    BizContentBuilder() {
+    bizContentBuilder() {
         var bizContent = {
             subject: 'EasyTech Auto Car Washing Service ',
             out_trade_no: this.outTradeNo,
@@ -87,7 +78,21 @@ export class AliPrecreateContent extends Content {
         return JSON.stringify(bizContent);
     }
 
-
+    createParams() {
+        let params = super.createParams();
+        params.set('method', 'alipay.trade.precreate');
+        params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
+        params.set('biz_content', this.bizContentBuilder());
+        return params;
+    }
 
 
 }
+module.exports = Content;
+module.exports = AliPrecreateContent;
+
+
+
+
+
+
