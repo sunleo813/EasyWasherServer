@@ -5,8 +5,9 @@ var config = require('./config');
 
 class Content {
 
-    constructor(outTradeNo) {
+    constructor(outTradeNo,serviceAmount) {
         this.outTradeNo = outTradeNo;
+        this.serviceAmount=serviceAmount;
     }
 
     signWithPrivateKey(signType, content) {
@@ -62,8 +63,8 @@ class Content {
 }
 
 class AliPrecreateContent extends Content {
-    constructor(outTradeNo) {
-        super(outTradeNo);
+    constructor(outTradeNo,serviceAmount) {
+        super(outTradeNo,serviceAmount);
 
     }
 
@@ -72,7 +73,7 @@ class AliPrecreateContent extends Content {
         var bizContent = {
             subject: 'EasyTech Auto Car Washing Service ',
             out_trade_no: this.outTradeNo,
-            total_amount: config.SERVICE_AMT,
+            total_amount: this.serviceAmount,
             qr_code_timeout_express: '30m'
         };
         return JSON.stringify(bizContent);

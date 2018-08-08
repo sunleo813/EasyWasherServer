@@ -20,7 +20,7 @@ describe('AliPrecreateContent', function () {
     })
     describe('#createParams', function () {
         it('method should return params from both Content & AliprecreateContent', function () {
-            let ali = new AliPrecreateContent('ZUH-001');
+            let ali = new AliPrecreateContent('ZUH-001',20);
             let params = ali.createParams();
             assert.equal('alipay.trade.precreate', params.get('method'));
             assert.equal('RSA2', params.get('sign_type'));
@@ -28,7 +28,7 @@ describe('AliPrecreateContent', function () {
     })
     describe('#build', function(){
         it('show paramsString after execute function build', function(){
-            let ali=new AliPrecreateContent('ZUH-001');
+            let ali=new AliPrecreateContent('ZUH-001',20);
             let paramString=ali.build();
             console.log(paramString);
 
