@@ -34,9 +34,12 @@ app.get('/', function (req, res) {
 })
 
 app.get('/alipay', function (req, res) {
-    var ShopID = req.query.ShopID;
-    var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
+    // var ShopID = req.query.ShopID;
+    // var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
+    var transID = req.query.TransID
+    var amount = req.query.Amount;
     console.log(transID);
+<<<<<<< HEAD
     content = new AliPrecreateContent(transID);
     let paramsString=content.build();
     console.log(paramsString);
@@ -52,6 +55,20 @@ app.get('/alipay', function (req, res) {
     //         qrCode.pipe(res);
     //     }
     // });
+=======
+    api.SendPrecreateTransaction(transID, amount, (result) => {
+        if (result == "Failed") {
+            res.writeHead(414, { 'Content-Type': 'text/html' });
+            res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
+        } else {
+            console.log("app-Alipay QR code returned!");
+            var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
+            res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*' });
+
+            qrCode.pipe(res);
+        }
+    });
+>>>>>>> 72c6b193ac9c1e4c1bfd2ff97adfbb550760c521
 
 })
 

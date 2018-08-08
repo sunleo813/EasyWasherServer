@@ -12,18 +12,18 @@ var config = require('./config')
 
 
 //gen Biz_Content
-function PrecreateBizContentBuilder(tradeNo) {
+function PrecreateBizContentBuilder(tradeNo, amount) {
     var bizContent = {
         subject: 'EasyTech Auto Car Washing Service ',
         out_trade_no: tradeNo,
-        total_amount: config.SERVICE_AMT,
+        total_amount: amount,
         qr_code_timeout_express: '30m'
     };
     return JSON.stringify(bizContent);
 };
 
 
-function TransferBizContentBuilder(){
+function TransferBizContentBuilder() {
 
 
 }
@@ -59,7 +59,7 @@ function verifySign(paramString, sign) {
         return verify.verify(publicKey, sign, 'base64');
 
     } catch (err) {
-        console.log('api-verifySign: '+err);
+        console.log('api-verifySign: ' + err);
         return false;
     }
 }
@@ -76,7 +76,7 @@ makeParamsString = function (params) {
 }
 
 
-createParams = function (transType, outTradeNo) {
+createParams = function (transType, outTradeNo, amount) {
     var params = new Map();
     params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
     params.set('app_id', config.ALIPAY_APP_ID);
@@ -87,15 +87,15 @@ createParams = function (transType, outTradeNo) {
         case 'precreate':
             params.set('method', 'alipay.trade.precreate');
             params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
-            params.set('biz_content', PrecreateBizContentBuilder(outTradeNo));
+            params.set('biz_content', PrecreateBizContentBuilder(outTradeNo, amount));
             break;
         case 'query':
             params.set('method', 'alipay.trade.query');
             params.set('biz_content', JSON.stringify({ out_trade_no: outTradeNo }));
-            break;  
+            break;
         case 'transfer':
-            param.set ('method', 'alipay.fund.transfer');
-            param.set ('biz_content', TransferBizContentBuilder());
+            param.set('method', 'alipay.fund.transfer');
+            param.set('biz_content', TransferBizContentBuilder());
     }
     return params;
 };
@@ -190,8 +190,8 @@ queryPaymentStatus = function (tradeNo) {
 
 
 //create and send transaction to alipay
-exports.SendPrecreateTransaction = function (outTradeNo, cb) {
-    var params = createParams("precreate", outTradeNo);
+exports.SendPrecreateTransaction = function (outTradeNo, amount, cb) {
+    var params = createParams("precreate", outTradeNo, amount);
     var paramsString = makeParamsString(params);
     var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
     paramsString += '&sign=' + sign;
@@ -202,7 +202,7 @@ exports.SendPrecreateTransaction = function (outTradeNo, cb) {
 
 //check payment status from Alipay
 exports.SendQueryTransaction = function (outTradeNo, cb) {
-    var params = createParams("query", outTradeNo);
+    var params = createParams("query", outTradeNo, 0);
     var paramsString = makeParamsString(params);
     var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
     paramsString += '&sign=' + sign;

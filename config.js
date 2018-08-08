@@ -11,7 +11,7 @@ var config = {
     ALIPAY_PUBLIC_KEY_PATH: './pem/Sandbox/alipay_public_key.txt',
     //ALIPAY_GATEWAY: 'https://openapi.alipay.com/gateway.do?',
     ALIPAY_GATEWAY: 'https://openapi.alipaydev.com/gateway.do?',
-    SERVICE_AMT: '15.00',
+ //   SERVICE_AMT: '15.00',
     DB_URL: 'mongodb://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/EasyWasherDB'
 };
 
