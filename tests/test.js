@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
-var Content = require('../content');
-var AliPrecreateContent = require('../content');
+var Content = require('../js/content');
+var AliPrecreateContent = require('../js/content');
 
 describe('Content', function () {
     describe('#constructor()', function () {
@@ -24,6 +24,15 @@ describe('AliPrecreateContent', function () {
             let params = ali.createParams();
             assert.equal('alipay.trade.precreate', params.get('method'));
             assert.equal('RSA2', params.get('sign_type'));
+        })
+    })
+    describe('#build', function(){
+        it('show paramsString after execute function build', function(){
+            let ali=new AliPrecreateContent('ZUH-001');
+            let paramString=ali.build();
+            console.log(paramString);
+
+
         })
     })
 })
