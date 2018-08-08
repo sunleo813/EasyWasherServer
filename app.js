@@ -33,16 +33,17 @@ app.get('/', function (req, res) {
 app.get('/alipay', function (req, res) {
     // var ShopID = req.query.ShopID;
     // var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
-    var transID=req.query.TransID
+    var transID = req.query.TransID
+    var amount = req.query.Amount;
     console.log(transID);
-    api.SendPrecreateTransaction(transID, (result) => {
+    api.SendPrecreateTransaction(transID, amount, (result) => {
         if (result == "Failed") {
             res.writeHead(414, { 'Content-Type': 'text/html' });
             res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
         } else {
             console.log("app-Alipay QR code returned!");
             var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
-            res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin':'*' });
+            res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*' });
 
             qrCode.pipe(res);
         }
