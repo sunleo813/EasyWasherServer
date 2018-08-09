@@ -53,30 +53,19 @@ app.get('/alipay', function (req, res) {
 
 app.get('/payment_status', function (req, res) {
     var transID = req.query.TransID;
-    var params = { 'TradeNO': transID };
+    var returnString = "";
+    //var params = { 'TradeNO': transID };
+
+
     api.SendQueryTransaction(transID, (result) => {
-        if (result.out_trade_no === transID) {
-            console.log('aliNotify-trade status: ' + result.trade_status);
-            //add insert db here 
-            res.send(result.trade_status);
+        if (result.out_trade_no === transID && result.trade_status === "TRADE_SUCCESS")
+            returnString = "success";
+        else
+            returnString = "fail";
+        res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' });
+        return res.end(returnString);
 
-        } else {
-            console.log('app-app.post: Alipay query return wrong out_trade_no');
-            res.send('out_trade_no not correct');
-        }
     })
-    // db.FindRecord(params, (result) => {
-    //     if (result[0] === undefined) { res.send('failed') }
-    //     else {
-    //         resultObj = result[0];
-    //         if (resultObj.TradeStatus === 'TRADE_SUCCESS') {
-    //             res.send('success')
-    //         } else {
-    //             res.send('failed')
-    //         }
-
-    //     }
-    // });
 })
 
 
