@@ -45,7 +45,7 @@ describe('AlipayRequestSender', function () {
 
     before(function () {
         let id = 'ZUH-000-' + moment().format('YYYYMMDDHHmmss');
-        let aliContent = new AliPrecreateContent(id);
+        let aliContent = new AliPrecreateContent(id,18);
         paramsString = aliContent.build();
         ali = new AlipayRequestSender(paramsString, 'alipay.trade.precreate');
     })
@@ -56,10 +56,14 @@ describe('AlipayRequestSender', function () {
             console.log(ali.alipayUrl)
         })
         it('All variables in sender should work', function (done) {
-            console.log('ali value= ' + JSON.stringify(ali));
-            console.log("paramsString value: " + paramsString);
-            ali.sendRequest(function(result){
-                assert.equal('Succe', result.msg);
+            // console.log('ali value= ' + JSON.stringify(ali));
+            //console.log("paramsString value: " + paramsString);
+            ali.sendRequest(function (result) {
+                console.log('test-sendRequest: '+result)
+                if (typeof result === "Object")
+                    assert.equal('Succes', result.msg);
+                else
+                    assert.equal('Failed', result);
                 done();
             })
         })
