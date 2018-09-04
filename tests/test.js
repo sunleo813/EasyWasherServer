@@ -1,7 +1,8 @@
 var assert = require('chai').assert;
-var Content = require('../js/content');
-var AliPrecreateContent = require('../js/content');
+//var Content = require('../js/content');
+//var AliPrecreateContent = require('../js/content');
 var AlipayRequestSender = require('../js/requestSender');
+import { Content, AliPrecreateContent, AliQueryContent } from '../js/content.js'
 var moment = require('moment');
 
 describe('Content', function () {
@@ -45,7 +46,7 @@ describe('AlipayRequestSender', function () {
 
     before(function () {
         let id = 'ZUH-000-' + moment().format('YYYYMMDDHHmmss');
-        let aliContent = new AliPrecreateContent(id,18);
+        let aliContent = new AliPrecreateContent(id, 18);
         paramsString = aliContent.build();
         ali = new AlipayRequestSender(paramsString, 'alipay.trade.precreate');
     })
@@ -59,11 +60,9 @@ describe('AlipayRequestSender', function () {
             // console.log('ali value= ' + JSON.stringify(ali));
             //console.log("paramsString value: " + paramsString);
             ali.sendRequest(function (result) {
-                console.log('test-sendRequest: '+result)
-                if (typeof result === "Object")
-                    assert.equal('Succes', result.msg);
-                else
-                    assert.equal('Failed', result);
+                console.log('test-sendRequest: ' + result)
+                assert.isNotNull(result);
+                assert.equal('Success', result.msg);
                 done();
             })
         })
