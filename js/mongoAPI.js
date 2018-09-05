@@ -2,9 +2,9 @@ var mongoClient = require('mongodb').MongoClient;
 var config = require('./config');
 var async = require("async");
 
-var mongoDB = function () {
+class MongoDB {
 
-    makeConnection = function (cb) {
+    makeConnection(cb) {
 
         mongoClient.connect(config.DB_URL, function (err, dbo) {
             if (err) {
@@ -21,9 +21,9 @@ var mongoDB = function () {
 
 
 
-    insertDB = function (dbo, record, cb) {
+    insertDB(dbo, collection, record, cb) {
         var db = dbo.db('EasyWasherDB');
-        db.collection('Transactions').insertOne(record, (err, result) => {
+        db.collection(collection).insertOne(record, (err, result) => {
             if (err) {
                 dbo.close();
                 throw err;
@@ -34,26 +34,35 @@ var mongoDB = function () {
         })
     }
 
-    findDB = function (dbo, params, cb) {
+    findDB(dbo, collection, params, cb) {
 
         var db = dbo.db("EasyWasherDB");
         if (params === "") {
-            db.collection("Transactions").find({}).toArray((err, res) => {
-
-                dbo.close()
-                cb(res);
+            db.collection(collection).find({}).toArray((err, res) => {
+                if (err) {
+                    dbo.close();
+                    throw err;
+                } else {
+                    dbo.close()
+                    cb(res);
+                }
             })
         }
         else {
-            var collection = db.collection('Transactions');
+            var collection = db.collection(collection);
             collection.find(params).toArray((err, res) => {
-                dbo.close()
-                cb(res);
+                if (err) {
+                    dbo.close();
+                    throw err;
+                } else {
+                    dbo.close()
+                    cb(res);
+                }
             })
         }
     }
 
-    this.AddRecord = function (record) {
+    AddRecord(record) {
         async.waterfall([
             function (cb) {
                 makeConnection((db) => {
@@ -74,7 +83,7 @@ var mongoDB = function () {
 
 
 
-    this.FindRecord = function (params, callback) {
+    FindRecord(params, callback) {
         async.waterfall([
             function (cb) {
                 makeConnection((db) => {
@@ -97,4 +106,4 @@ var mongoDB = function () {
     };
 }
 
-module.exports = mongoDB;
+module.exports= MongoDB;

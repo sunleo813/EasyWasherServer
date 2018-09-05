@@ -64,7 +64,7 @@ function verifySign(paramString, sign) {
     }
 }
 
-makeParamsString = function (params) {
+function makeParamsString(params) {
 
     //sort params and clear empty field
     var paramList = [...params].filter(([k1, v1]) => k1 !== 'sign' && v1);
@@ -76,7 +76,7 @@ makeParamsString = function (params) {
 }
 
 
-createParams = function (transType, outTradeNo, amount) {
+function createParams(transType, outTradeNo, amount) {
     var params = new Map();
     params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
     params.set('app_id', config.ALIPAY_APP_ID);

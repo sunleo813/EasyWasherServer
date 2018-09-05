@@ -9,7 +9,7 @@ class Content {
         this.serviceAmount = serviceAmount;
     }
 
-    signWithPrivateKey = function (signType, content) {
+    signWithPrivateKey(signType, content) {
         let sign;
         let privatePem = fs.readFileSync(config.ALIPAY_APP_PRIVATE_KEY_PATH, 'utf8');
         let privateKey = privatePem.toString();
@@ -27,7 +27,7 @@ class Content {
         return encodeURIComponent(sign);
     }
 
-    makeParamsString = function (params) {
+    makeParamsString(params) {
 
         //sort params and clear empty field
         let paramList = [...params].filter(([k1, v1]) => k1 !== 'sign' && v1);
@@ -38,7 +38,7 @@ class Content {
         return paramsString;
     }
 
-    createParams = function () {
+    createParams() {
         let params = new Map();
         params.set('timestamp', moment().format('YYYY-MM-DD HH:mm:ss'));
         params.set('app_id', config.ALIPAY_APP_ID);
@@ -50,10 +50,10 @@ class Content {
         return params;
     };
 
-    build = function () {
-        var params = createParams();
-        var paramsString = makeParamsString(params);
-        var sign = signWithPrivateKey(params.get('sign_type'), paramsString);
+    build() {
+        var params = this.createParams();
+        var paramsString = this.makeParamsString(params);
+        var sign = this.signWithPrivateKey(params.get('sign_type'), paramsString);
         paramsString += '&sign=' + sign;
         return paramsString;
         // sendAlipayOrder(paramsString, 'alipay.trade.precreate', (result) => {
@@ -62,12 +62,12 @@ class Content {
 
 }
 
-class AliPrecreateContent extends content {
+class AliPrecreateContent extends Content {
     constructor(outTradeNo, serviceAmount) {
         super(outTradeNo, serviceAmount);
     }
 
-    bizContentBuilder = function () {
+    bizContentBuilder() {
         var bizContent = {
             subject: 'EasyTech Auto Car Washing Service ',
             out_trade_no: this.outTradeNo,
@@ -79,7 +79,7 @@ class AliPrecreateContent extends content {
         return JSON.stringify(bizContent);
     }
 
-    createParams = function () {
+    createParams() {
         let params = super.createParams();
         params.set('method', 'alipay.trade.precreate');
         // params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
@@ -96,7 +96,7 @@ class AliQueryContent extends Content {
 
     bizContentBuilder() {
         var bizContent = {
-            trade_no: outTradeNo
+            out_trade_no: this.outTradeNo
         }
         return JSON.stringify(bizContent);
     }
@@ -110,9 +110,3 @@ class AliQueryContent extends Content {
 }
 
 export { Content, AliPrecreateContent, AliQueryContent }
-
-
-
-
-
-

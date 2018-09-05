@@ -1,18 +1,19 @@
 
 var express = require('express');
 var app = express();
-var api = require('./alipayAPI');
+//var api = require('./js/alipayAPI');
 var qr = require('qr-image');
 var querystring = require('querystring');
-var MongoAPI = require('./mongoAPI');
+var MongoAPI = require('./js/mongoAPI');
 var moment = require('moment');
-var AliPrecreateContent = require('./content');
-
+//var AliPrecreateContent = require('./js/content');
+import { AliPrecreateContent, AliQueryContent } from './js/content'
+import { AlipayRequestSender } from './js/requestSender'
 
 var body = "";
 const db = new MongoAPI();
 
-InsertTransactionToDB = function (params) {
+var InsertTransactionToDB = function (params) {
     var record = {
         TradeNO: params.out_trade_no,
         TotalAmount: params.total_amount,
@@ -34,55 +35,43 @@ app.get('/', function (req, res) {
 })
 
 app.get('/alipay', function (req, res) {
-    // var ShopID = req.query.ShopID;
-    // var transID=ShopID+"-"+moment().format('YYYYMMDDHHmmss');
-    var transID = req.query.TransID
-    var amount = req.query.Amount;
-    console.log(transID);
-    var aliContent=new AliPrecreateContent(transID,amount);
-    var paramsString=aliContent.build();
-    console.log(paramsString);
-    // api.SendPrecreateTransaction(transID, amount, (result) => {
-    //     if (result == "Failed") {
-    //         res.writeHead(414, { 'Content-Type': 'text/html' });
-    //         res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
-    //     } else {
-    //         console.log("app-Alipay QR code returned!");
-    //         var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
-    //         res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*' });
+    //client provide TransID because client needs it to query for payment status later on
+    let { TransID, Amount } = req.query;
+    // var TransID = ShopID + "-" + moment().format('YYYYMMDDHHmmss');
+    //console.log(TransID);
+    var content = new AliPrecreateContent(TransID, Amount);
+    var paramsString = content.build();
+    //console.log(paramsString);
+    var sender = new AlipayRequestSender(paramsString, 'precreate');
+    sender.sendRequest(function (result) {
+        if (result == "Failed") {
+            res.writeHead(414, { 'Content-Type': 'text/html' });
+            res.end("<h1>Transaction failed, please use another machine.  Sorry for bringing you unconvinient </h1>");
+        } else {
+            console.log("app-Alipay QR code returned!");
+            var qrCode = qr.image(result.qr_code, { size: 10, type: 'png' })
+            res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*' });
 
-    //         qrCode.pipe(res);
-    //     }
-    // });
+            qrCode.pipe(res);
+        }
+    })
 
 })
 
 app.get('/payment_status', function (req, res) {
     var transID = req.query.TransID;
-    var params = { 'TradeNO': transID };
-    api.SendQueryTransaction(transID, (result) => {
-        if (result.out_trade_no === transID) {
-            console.log('aliNotify-trade status: ' + result.trade_status);
-            //add insert db here 
-            res.send(result.trade_status);
-
-        } else {
-            console.log('app-app.post: Alipay query return wrong out_trade_no');
-            res.send('out_trade_no not correct');
-        }
+    var content = new AliQueryContent(transID);
+    var paramsString = content.build();
+    //console.log('app-payment_status paramsString: '+paramsString)
+    var sender = new AlipayRequestSender(paramsString, 'query');
+    sender.sendRequest(function (result) {
+        if (result.out_trade_no === transID && result.trade_status === "TRADE_SUCCESS")
+            var returnString = "success";
+        else
+            var returnString = "fail";
+        res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' });
+        return res.end(returnString);
     })
-    // db.FindRecord(params, (result) => {
-    //     if (result[0] === undefined) { res.send('failed') }
-    //     else {
-    //         resultObj = result[0];
-    //         if (resultObj.TradeStatus === 'TRADE_SUCCESS') {
-    //             res.send('success')
-    //         } else {
-    //             res.send('failed')
-    //         }
-
-    //     }
-    // });
 })
 
 
