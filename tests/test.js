@@ -1,26 +1,15 @@
 var assert = require('chai').assert;
 //var Content = require('../js/content');
 //var AliPrecreateContent = require('../js/content');
-// 
-var MongoDB = require('../js/mongoAPI')
+var MongoAPI = require('../js/mongoAPI')
 
+var mongo = new MongoAPI();
 
 describe('mongoDB', function () {
-    var db;
-    var mongo=new MongoDB;
-    describe('#makeConnection', function () {
-        it('should return db object ', function (done) {
-            mongo.makeConnection(function (dbo) {
-                console.log(dbo)
-                assert.exists(dbo);
-                this.db=dbo;
-                done() 
-            })
-        });
 
-    });
-    describe('#insertDB- insert record to collection Transaction', function () {
-        it('Insert record and should return object result', function () {
+    describe('Transactions Operations', function () {
+        it('AddRecord()', function (done) {
+            this.timeout(10000);
             var record = {
                 TradeNO: 'ZUH-000-20180905141133',
                 TotalAmount: 18,
@@ -31,11 +20,29 @@ describe('mongoDB', function () {
                 BuyerLogonID: 'mocha-test',
                 BuyerUserID: 'mocha-test'
             };
-            mongo.insertDB(this.db,'Transactions',record,function(err,result){
-                assert.fail(err);
-                assert.exists(result);
-            })
+            mongo.AddRecord('Transactions', record, function (result) {
+                if (result === null) {
+                    assert.fail();
+                    done();
+                } else {
+                    assert.exists(result);
+                    done();
+                }
 
+            })
+        })
+
+        it('FindRecord-All ', function (done) {
+            mongo.FindRecord('Transactions', "", function (result) {
+                if (result === null) {
+                    assert.fail();
+                    done();
+                }
+                else {
+                    assert.equal('ZUH-000-20180905141133', result[0].TradeNO);
+                    done();
+                }
+            })
         })
     })
 });
