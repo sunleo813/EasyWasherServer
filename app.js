@@ -7,7 +7,7 @@ var querystring = require('querystring');
 var MongoAPI = require('./js/mongoAPI');
 var moment = require('moment');
 //var AliPrecreateContent = require('./js/content');
-import { AliPrecreateContent, AliQueryContent } from './js/content'
+import { AliPrecreateContent, AliQueryContent, AliWapContent } from './js/content'
 import { AlipayRequestSender } from './js/requestSender'
 
 var body = "";
@@ -34,7 +34,7 @@ app.get('/', function (req, res) {
 
 })
 
-app.get('/alipay', function (req, res) {
+app.get('/alipayPrecreate', function (req, res) {
     //client provide TransID because client needs it to query for payment status later on
     let { TransID, Amount } = req.query;
     // var TransID = ShopID + "-" + moment().format('YYYYMMDDHHmmss');
@@ -53,6 +53,26 @@ app.get('/alipay', function (req, res) {
             res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*' });
 
             qrCode.pipe(res);
+        }
+    })
+
+})
+
+app.get('/alipayWapTrade', function (req, res) {
+    let { TransID, Amount } = req.query;
+    var content = new AliWapContent(TransID, Amount);
+    var paramsString = content.build();
+    //console.log(paramsString);
+    var sender = new AlipayRequestSender(paramsString, 'wap_pay');
+    sender.sendRequest(function (result) {
+        if (result) {
+            console.log("Alipay_Wap_Trade returned!");
+            console.log(result)
+//           res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8'});
+            res.send(result);
+        } else {
+            // res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' });
+            res.end('Alipay_Wap_Trade error')
         }
     })
 

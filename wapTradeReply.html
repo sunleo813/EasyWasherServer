@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1"/>
+<meta name="renderer" content="webkit"/>
+<title>支付宝</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="format-detection" content="telephone=no,email=no"/>
+    <meta id="WV.Meta.Share.Disabled" value="true" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"/>
+<link rel="apple-touch-icon" href="https://i.alipayobjects.com/i/ecmng/png/201406/2qBuceUYiL.png" />
+<link rel="apple-touch-icon-precomposed" href="https://i.alipayobjects.com/i/ecmng/png/201406/2qBuceUYiL.png" />
+<!-- CMS:mobileclientgw/common/tracker.vm开始:mobileclientgw/common/tracker.vm -->
+
+
+<!-- CMS:mobileclientgw/common/tracker.vm结束:mobileclientgw/common/tracker.vm --><script charset="utf-8" src="https://as.alipayobjects.com:443/g/snake/h5cashier/1.0.5/h5cashier.js"></script>
+<link rel="stylesheet" type="text/css" href="https://as.alipayobjects.com:443/g/snake/h5cashier/1.0.5/h5cashier.css" media="all" />
+<script charset="utf-8" id="seajsnode" src="https://a.alipayobjects.com:443/??seajs/seajs/2.2.0/sea.js,seajs/seajs-combo/1.0.0/seajs-combo.js"></script>
+
+<script>
+    seajs.config({
+        alias: {
+                                        '$': 'gallery/zepto/1.0.2/zepto',
+                        'validator': 'arale/validator/0.9.7/validator',
+            'widget': 'arale/widget/1.1.1/widget',
+            'base': 'arale/base/1.1.1/base',
+            'class': 'arale/class/1.1.0/class',
+            'events': 'arale/events/1.1.0/events',
+            'wapcashier': 'mobileclientgw/wapcashier/1.1.7/wapcashier'
+        },
+        vars: {
+            locale: 'zh-cn'
+        }
+    });
+</script>
+</head>
+<body>
+<div class="J-msg-mask am-msg-mask" style="display:none"></div>
+<div class="J-msg-box am-msg-box" style="display:none">
+    <div class="am-msg-box-content">
+        <p class="J-msg-text"></p>
+        <button class="J-msg-cancel am-button am-button-blue" type="button">知道了</button>
+    </div>
+</div>
+
+    <div class="J-loading am-loading"><div class="am-loading-text">加载中...</div></div>
+
+<!-- CMS:mobileclientgw/common/notice.vm开始:mobileclientgw/common/notice.vm --><!-- CMS:mobileclientgw/common/notice.vm结束:mobileclientgw/common/notice.vm -->
+
+
+<!-- versionError.vm -->
+
+
+<style>
+    header.am-header {
+        display: none;
+    }
+    div.header {
+        width: 100%;
+        padding: 10px 0;
+        background: #1d222d;
+        color: #fff;
+        font-size: 20px;
+        text-align: center;
+    }
+    .am-header .title-main {
+
+    }
+    .title {
+        display: block;
+        font-size: 18px;
+        color: #000;
+        font-weight: 700;
+        margin: 0 0 10px;
+    }
+    .am-loading,
+    .alipay-logo {
+        display: none;
+    }
+</style>
+
+<div class="header">
+    <span class="title-main" data-title="支付宝">支付宝</span>
+</div>
+
+<div class="am-message-sysError">
+    <img src="https://zos.alipayobjects.com/rmsportal/ZkCYCaVMgOubxVU.png" width="160" height="160" />
+    <p>
+        <strong class="title">
+                原来浏览器版本低是硬伤！<br>建议使用UC、Chrome、IE10等高版本浏览器        </strong>
+    </p>
+</div>
+<script type="text/javascript">
+
+$(function(){
+
+
+
+        $('.J-loading').addClass('fn-hide');
+
+
+
+        $('.J-open-protocol').on('click',function(e){
+        var el = $(this);
+        Zepto.dialog.show({
+            message: '<div style="height: 280px;-webkit-overflow-scrolling:touch;overflow:auto;"><iframe style="height: 280px;width: 100%;overflow: auto;" src="' + el.attr('href') + '" frameborder="0" scrolling="auto" allowTransparency="true"></iframe></div>',
+            buttons: '确定',
+            complete: function () {
+                Zepto.dialog.hide();
+            }
+        });
+        e.preventDefault();
+    });
+
+    // fix dialog连续闪动的问题
+    Zepto.dialog.hide = function() {
+        $('body').find('.am-dialog-mask').remove();
+        $('body').find('.am-dialog-box').remove();
+    }
+});
+</script>
+
+
+<footer>
+    <div class="alipay-logo"></div>
+    <div id="ServerNum">mobileclientgw-2-1-1.daily.alipaydev.com</div>
+</footer>
+<!-- CMS:安全支付客户端网关/common/footer.vm开始:mobileclientgw/common/footer.vm -->    <script type="text/javascript">
+  if (location.href.indexOf('cashierPay.htm') > 0) {
+    $('.am-header').on('click', '.am-header-operate', function(e){
+      if ($(this).attr('clicked') !== '1') {
+        location.href = $(this).attr('href');
+      }
+      $(this).attr('clicked', '1');
+      e.preventDefault();
+    });
+  }
+</script><!-- CMS:安全支付客户端网关/common/footer.vm结束:mobileclientgw/common/footer.vm --></body>
+</html>
+undefined:1
+<!DOCTYPE html>

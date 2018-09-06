@@ -109,4 +109,31 @@ class AliQueryContent extends Content {
     }
 }
 
-export { Content, AliPrecreateContent, AliQueryContent }
+class AliWapContent extends Content {
+    constructor(outTradeNo, serviceAmount) {
+        super(outTradeNo, serviceAmount);
+    }
+
+    bizContentBuilder() {
+        var bizContent = {
+            subject: 'EasyTech Auto Car Washing Service ',
+            out_trade_no: this.outTradeNo,
+            total_amount: this.serviceAmount,
+ //           product_code: 'QUICK_WAP_WAY',
+            product_code: 'FAST_INSTANT_TRADE_PAY'
+        };
+        //console.log('bizContentBuilder-serviceAmount: '+this.serviceAmount)
+        //console.log("bizContentBuilder-bizContent: "+JSON.stringify(bizContent))
+        return JSON.stringify(bizContent);
+    }
+
+    createParams() {
+        let params = super.createParams();
+        params.set('method', 'alipay.trade.wap.pay');
+        // params.set('notify_url', config.ALIPAY_APP_GATEWAY_URL);
+        // params.set('biz_content', this.bizContentBuilder());
+        return params;
+    }
+}
+
+export { Content, AliPrecreateContent, AliQueryContent, AliWapContent }

@@ -9,10 +9,10 @@ class MongoDB {
         mongoClient.connect(config.DB_URL, function (err, dbo) {
             if (err) {
                 console.log('Fail to connect DB!!!!!')
-                throw err;
+                cb(err, null)
             }
             else {
-                cb(dbo);
+                cb(null, dbo);
             }
         })
 
@@ -26,7 +26,7 @@ class MongoDB {
         db.collection(collection).insertOne(record, (err, result) => {
             if (err) {
                 dbo.close();
-                throw err;
+                cb(err, null);
             } else {
                 dbo.close();
                 cb(null, result);
@@ -35,16 +35,16 @@ class MongoDB {
     }
 
     findDB(dbo, collection, params, cb) {
-
+        //        console.log('findDB running on collection: ' + collection)
         var db = dbo.db("EasyWasherDB");
         if (params === "") {
             db.collection(collection).find({}).toArray((err, res) => {
                 if (err) {
                     dbo.close();
-                    throw err;
+                    cb(err, null);
                 } else {
                     dbo.close()
-                    cb(res);
+                    cb(null, res);
                 }
             })
         }
@@ -53,45 +53,60 @@ class MongoDB {
             collection.find(params).toArray((err, res) => {
                 if (err) {
                     dbo.close();
-                    throw err;
+                    cb(err, null);
                 } else {
                     dbo.close()
-                    cb(res);
+                    cb(null, res);
                 }
             })
         }
     }
 
-    AddRecord(record) {
+    AddRecord(collection, record, callback) {
+        var that = this;
         async.waterfall([
             function (cb) {
-                makeConnection((db) => {
-                    cb(null, db);
+                that.makeConnection((err, db) => {
+                    if (err)
+                        cb(err, null);
+                    else
+                        cb(null, db);
                 })
             },
             function (db, cb) {
-                insertDB(db, record, (result) => {
-                    cb(null, result);
+                that.insertDB(db, collection, record, (err, result) => {
+                    if (err)
+                        cb(err, null);
+                    else
+                        cb(null, result);
                 })
             }
         ], function (err, result) {
             if (err) {
                 console.log("MongoAPI-AddRecord: Fail to add record to DB!!");
+                callback(null);
+            } else {
+                //               console.log("AddRecord-end result: "+result)
+                callback(result);
             }
         })
     }
 
 
-
-    FindRecord(params, callback) {
+    //Return array of records, if cannot find any record, will return []
+    FindRecord(collection, params, callback) {
+        var that = this;
         async.waterfall([
             function (cb) {
-                makeConnection((db) => {
-                    cb(null, db);
+                that.makeConnection((err, db) => {
+                    if (err)
+                        cb(err, null);
+                    else
+                        cb(null, db);
                 })
             },
             function (db, cb) {
-                findDB(db, params, (res) => {
+                that.findDB(db, collection, params, (err, res) => {
                     cb(null, res);
                 })
             }
@@ -106,4 +121,4 @@ class MongoDB {
     };
 }
 
-module.exports= MongoDB;
+module.exports = MongoDB;
