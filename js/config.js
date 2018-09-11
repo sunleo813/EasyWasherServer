@@ -13,7 +13,12 @@ var config = {
     ALIPAY_GATEWAY: 'https://openapi.alipaydev.com/gateway.do?',
  //   SERVICE_AMT: '15.00',
   //  DB_URL: 'mongodb://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/EasyWasherDB'
-    DB_URL: 'mongodb://localhost/EasyWasherDB'
+    DB_URL: 'mongodb://localhost/EasyWasherDB',
+
+    WX_APPID: '1234567890',
+    WX_MCH_ID: '0987654321',
+    WX_SPBILL_CREATE_IP: ' 202.175.45.91',
+    WX_NOTIFY_URL: 'http://ec2-34-219-4-10.us-west-2.compute.amazonaws.com/wxpay_notify'
 };
 
 module.exports = config;

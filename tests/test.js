@@ -3,6 +3,8 @@ var assert = require('chai').assert;
 //var AliPrecreateContent = require('../js/content');
 var MongoAPI = require('../js/mongoAPI')
 
+
+
 var mongo = new MongoAPI();
 
 describe('mongoDB', function () {

@@ -1,11 +1,12 @@
 
 var express = require('express');
 var app = express();
-//var api = require('./js/alipayAPI');
 var qr = require('qr-image');
 var querystring = require('querystring');
 var MongoAPI = require('./js/mongoAPI');
-var moment = require('moment');
+//var moment = require('moment');
+
+
 //var AliPrecreateContent = require('./js/content');
 import { AliPrecreateContent, AliQueryContent, AliWapContent } from './js/content'
 import { AlipayRequestSender } from './js/requestSender'
@@ -33,6 +34,8 @@ app.get('/', function (req, res) {
     res.send("EasyTech Car Washer System");
 
 })
+
+/* Alipay Section */
 
 app.get('/alipayPrecreate', function (req, res) {
     //client provide TransID because client needs it to query for payment status later on
@@ -68,7 +71,7 @@ app.get('/alipayWapTrade', function (req, res) {
         if (result) {
             console.log("Alipay_Wap_Trade returned!");
             console.log(result)
-//           res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8'});
+            //           res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8'});
             res.send(result);
         } else {
             // res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' });
@@ -153,6 +156,15 @@ app.post('/aliNotify.html', function (req, res) {
 
     res.send('success');
 })
+
+
+
+/* WxPay Section */
+
+app.get('/wxpay', function (req, res) {
+
+})
+
 
 app.listen(3000, function () {
     console.log('Server running');
