@@ -1,5 +1,91 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  
+  div(class="weui_cell_title title") 
+    h2(class="weui_cell_primary") 洗车
+  div(class='weui-cell')
+    label(class='weui-label') 车牌号码：
+  div(class='weui-cell')
+    div(class='weui-grids')
+        select(class='weui-grid weui-select carNo', id="carNo1" value='粤')
+          option(value='粤') 粤
+          option(value='京') 京
+          option(value='津') 津
+          option(value='沪') 沪
+          option(value='渝') 渝
+          option(value='冀') 冀
+          option(value='豫') 豫
+          option(value='云') 云
+          option(value='辽') 辽
+          option(value='黑') 黑
+          option(value='湘') 湘
+          option(value='皖') 皖
+          option(value='鲁') 鲁
+          option(value='新') 新
+          option(value='苏') 苏
+          option(value='浙') 浙
+          option(value='赣') 赣
+          option(value='桂') 桂
+          option(value='甘') 甘
+          option(value='晋') 晋
+          option(value='蒙') 蒙
+          option(value='陕') 陕
+          option(value='吉') 吉
+          option(value='闽') 闽
+          option(value='贵') 贵
+          option(value='青') 青
+          option(value='藏') 藏
+          option(value='琼') 琼
+        select(class='weui-grid weui-select carNo', id="carNo2" value='A')
+          option(value='A') A
+          option(value='B') B
+          option(value='C') C
+          option(value='D') D
+          option(value='E') E
+          option(value='F') F
+          option(value='G') G
+          option(value='H') H
+          option(value='I') I
+          option(value='J') J
+          option(value='K') K
+          option(value='L') L
+          option(value='M') M
+          option(value='N') N
+          option(value='O') O
+          option(value='P') P
+          option(value='Q') Q
+          option(value='R') R
+          option(value='S') S
+          option(value='T') T
+          option(value='U') U
+          option(value='V') V
+          option(value='W') W
+          option(value='X') X
+          option(value='Y') Y
+          option(value='Z') Z
+        input(class="weui-input weui-grid carNo3" type="text" id="carNo3")
+        select(class='weui-grid weui-select carNo', id="carNo4")
+          option(value='') 
+          option(value='澳') 澳
+          option(value='港') 港
+
+  div(class='weui-btn-area')
+    a(class='weui-btn weui-btn_primary' href="javascript:" onclick="getCarNumber()") 车牌确认
+    
+  div(class='weui-cell')
+    div(class='weui-cell_hd')
+      label(class='weui-label') 你的车牌：
+    div(class='weui-cell-bd')
+      label(class='weui-label' id='carNo') 
+
+  div(class='weui-btn-area ' id='alipay' )
+     a(class='weui-btn alipay' href="javascript:"  onclick="startAlipay()") 支付宝
+
+  div(class='weui-btn-area ' id='wxpay' )
+     a(class='weui-btn weui-btn_primary ' href="javascript:"  onclick="startwxpay()") 微信支付
+
+
+  script(src="jquery.min.js")
+  script(src="indexView.js")
+

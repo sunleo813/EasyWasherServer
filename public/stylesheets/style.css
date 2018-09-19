@@ -1,8 +1,21 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.title {
+  background-color: #1aad19;
+  text-align: left;
+  color: rgb(238, 241, 236);
+  padding: 8px 5px
 }
 
-a {
-  color: #00B7FF;
+.carNo{
+  width:20%;
+  font-size: 25px;
+  text-align: center;
+  padding:5px;
+  -webkit-appearance:menulist-button
+}
+
+.carNo3 {
+  width: 40%;
+  font-size: 25px;
+  text-align: center;
+  padding:22px 10px;
 }

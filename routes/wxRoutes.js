@@ -13,4 +13,8 @@ module.exports = function (app) {
         })
     })
 
+    app.get('/wxpay_test', function(req,res){
+        res.render('index')
+    })
+
 }

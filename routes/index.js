@@ -42,9 +42,4 @@ module.exports = function (app) {
       res.send(JSON.stringify(result));
     });
   })
-
-
-
-
-
 }
