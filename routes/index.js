@@ -3,8 +3,8 @@ var wxRoutes = require('./wxRoutes');
 
 module.exports = function (app) {
   app.get('/', function (req, res) {
-    res.render('index', { title: 'EasyTech Car Washer System' })
-
+    //res.render('index', { title: 'EasyTech Car Washer System' })
+    res.render('index');
   })
 
   /* Alipay Section */

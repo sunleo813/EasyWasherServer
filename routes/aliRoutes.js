@@ -1,5 +1,7 @@
 var qr = require('qr-image');
 var querystring = require('querystring');
+var moment=require('moment');
+
 import { AliPrecreateContent, AliQueryContent, AliWapContent } from '../js/content'
 import { AlipayRequestSender } from '../js/requestSender'
 
@@ -7,8 +9,8 @@ module.exports = function (app) {
 
     app.get('/alipayPrecreate', function (req, res) {
         //client provide TransID because client needs it to query for payment status later on
-        let { TransID, Amount } = req.query;
-        // var TransID = ShopID + "-" + moment().format('YYYYMMDDHHmmss');
+        let { ShopID, Amount } = req.query;
+        var TransID = ShopID + "-" + moment().format('YYYYMMDDHHmmss');
         //console.log(TransID);
         var content = new AliPrecreateContent(TransID, Amount);
         var paramsString = content.build();
@@ -30,7 +32,8 @@ module.exports = function (app) {
     })
 
     app.get('/alipayWapTrade', function (req, res) {
-        let { TransID, Amount } = req.query;
+        let { ShopID, Amount } = req.query;
+        var TransID = ShopID + "-" + moment().format('YYYYMMDDHHmmss');
         var content = new AliWapContent(TransID, Amount);
         var paramsString = content.build();
         //console.log(paramsString);
